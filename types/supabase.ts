@@ -1,6 +1,20 @@
 export interface Database {
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          key: string;
+          value: Record<string, unknown>;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Record<string, unknown>;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["app_config"]["Insert"]>;
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;
