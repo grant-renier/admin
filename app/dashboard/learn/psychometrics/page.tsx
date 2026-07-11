@@ -1,13 +1,13 @@
-import {
-  getPsychometricScales,
-  PsychometricScalesTable,
-} from "@/features/learn";
+import { getPsychometricScales } from "@/features/learn/queries";
 import { MetricCard } from "@/components/metric-card";
 import { BrainIcon, ShieldCheckIcon } from "lucide-react";
+import { PsychometricsPageClient } from "./client";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function PsychometricsPage() {
   const scales = await getPsychometricScales();
-
   const systemCount = scales.filter((s) => s.is_system).length;
 
   return (
@@ -29,7 +29,7 @@ export default async function PsychometricsPage() {
         />
       </div>
       <div className="px-4 lg:px-6">
-        <PsychometricScalesTable data={scales} />
+        <PsychometricsPageClient data={scales} />
       </div>
     </>
   );

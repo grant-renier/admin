@@ -1,10 +1,13 @@
-import { getBlogArticles, BlogList } from "@/features/learn";
+import { getBlogArticles } from "@/features/learn/queries";
 import { MetricCard } from "@/components/metric-card";
 import { BookOpenIcon, CheckCircleIcon } from "lucide-react";
+import { BlogsPageClient } from "./client";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function BlogsPage() {
   const articles = await getBlogArticles();
-
   const publishedCount = articles.filter((a) => a.is_published).length;
 
   return (
@@ -26,7 +29,7 @@ export default async function BlogsPage() {
         />
       </div>
       <div className="px-4 lg:px-6">
-        <BlogList data={articles} />
+        <BlogsPageClient data={articles} />
       </div>
     </>
   );
