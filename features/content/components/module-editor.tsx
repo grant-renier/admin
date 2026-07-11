@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   Card,
   CardContent,
@@ -11,24 +11,40 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import type { ModuleWithSubscribers } from "../types";
-import { UsersIcon, MicIcon } from "lucide-react";
+import { UsersIcon, MicIcon, PencilIcon } from "lucide-react";
+import { toggleModuleAction } from "@/app/dashboard/content/actions";
+import { ModuleEditDialog } from "./module-edit-dialog";
 
+/**
+ * Grid of module cards with a live is_active toggle (optimistic, persisted
+ * through a server action) and an edit dialog for description and prompts.
+ */
 export function ModuleEditor({
   modules,
 }: {
   modules: ModuleWithSubscribers[];
 }) {
-  const [toggling, setToggling] = useState<string | null>(null);
+  // Optimistic overrides keyed by module id; the server value wins again
+  // once revalidatePath refreshes the page data.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+  const [editing, setEditing] = useState<ModuleWithSubscribers | null>(null);
+  const [, startTransition] = useTransition();
 
-  async function handleToggle(moduleId: string, currentActive: boolean) {
-    setToggling(moduleId);
-    try {
-      await fetch(`/api/auth/login`, { method: "HEAD" }).catch(() => {});
-      // In production this would call an API route to update the module
-    } finally {
-      setToggling(null);
-    }
+  function handleToggle(mod: ModuleWithSubscribers) {
+    const next = !(overrides[mod.id] ?? mod.is_active);
+    setOverrides((prev) => ({ ...prev, [mod.id]: next }));
+    startTransition(async () => {
+      try {
+        await toggleModuleAction(mod.id, next);
+        toast.success(`${mod.name} ${next ? "activated" : "deactivated"}`);
+      } catch {
+        // Roll back the optimistic flip so the UI matches the database.
+        setOverrides((prev) => ({ ...prev, [mod.id]: !next }));
+        toast.error(`Failed to update ${mod.name}`);
+      }
+    });
   }
 
   return (
@@ -54,11 +70,20 @@ export function ModuleEditor({
                   </CardDescription>
                 </div>
               </div>
-              <Switch
-                checked={mod.is_active}
-                disabled={toggling === mod.id}
-                onCheckedChange={() => handleToggle(mod.id, mod.is_active)}
-              />
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditing(mod)}
+                  aria-label={`Edit ${mod.name}`}
+                >
+                  <PencilIcon className="size-4" />
+                </Button>
+                <Switch
+                  checked={overrides[mod.id] ?? mod.is_active}
+                  onCheckedChange={() => handleToggle(mod)}
+                />
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -90,6 +115,10 @@ export function ModuleEditor({
           </CardContent>
         </Card>
       ))}
+      <ModuleEditDialog
+        module={editing}
+        onOpenChange={(open) => !open && setEditing(null)}
+      />
     </div>
   );
 }

@@ -9,7 +9,15 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!process.env.ADMIN_JWT_SECRET) {
-    return NextResponse.next();
+    // Dev convenience only. In production a missing secret must FAIL
+    // CLOSED — an unset env var must never publish the whole dashboard.
+    if (process.env.NODE_ENV !== "production") {
+      return NextResponse.next();
+    }
+    return new NextResponse(
+      "Admin auth is not configured (ADMIN_JWT_SECRET missing).",
+      { status: 503 }
+    );
   }
 
   const token = request.cookies.get(COOKIE_NAME)?.value;

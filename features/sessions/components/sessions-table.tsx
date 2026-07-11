@@ -5,10 +5,10 @@ import { DataTable } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import type { SessionWithUser } from "../types";
 import Link from "next/link";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const columns: ColumnDef<SessionWithUser>[] = [
+const baseColumns: ColumnDef<SessionWithUser>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -124,7 +124,36 @@ const columns: ColumnDef<SessionWithUser>[] = [
   },
 ];
 
-export function SessionsTable({ data }: { data: SessionWithUser[] }) {
+interface SessionsTableProps {
+  data: SessionWithUser[];
+  /** When provided, renders a per-row trash button that reports the row id. */
+  onDelete?: (id: string) => void;
+}
+
+export function SessionsTable({ data, onDelete }: SessionsTableProps) {
+  // The actions column only exists when the caller wires up deletion, so
+  // read-only embeds of this table stay unchanged.
+  const columns: ColumnDef<SessionWithUser>[] = onDelete
+    ? [
+        ...baseColumns,
+        {
+          id: "actions",
+          header: "",
+          cell: ({ row }) => (
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Delete session"
+              className="text-destructive hover:text-destructive"
+              onClick={() => onDelete(row.original.id)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          ),
+        },
+      ]
+    : baseColumns;
+
   return (
     <DataTable
       columns={columns}

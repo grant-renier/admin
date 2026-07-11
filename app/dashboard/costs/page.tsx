@@ -1,13 +1,8 @@
-import {
-  CostOverviewCards,
-  CostTrendChart,
-  PerSessionCostTable,
-  getCostSummary,
-  getDailyDeepgramUsage,
-  getDailyAIChatUsage,
-  getDailyBridgeUsage,
-  getPerSessionCosts,
-} from "@/features/costs";
+import { CostOverviewCards, CostTrendChart, PerSessionCostTable } from "@/features/costs";
+import { getCostSummary, getDailyDeepgramUsage, getDailyAIChatUsage, getDailyBridgeUsage, getPerSessionCosts } from "@/features/costs/queries";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function CostOverviewPage() {
   const [summary, deepgramDaily, aiChatDaily, bridgeDaily, perSession] =

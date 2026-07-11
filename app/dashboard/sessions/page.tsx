@@ -1,7 +1,10 @@
-import { getSessions, getSessionStats } from "@/features/sessions";
-import { SessionsTable } from "@/features/sessions";
+import { getSessions, getSessionStats } from "@/features/sessions/queries";
+import { SessionsPageClient } from "./client";
 import { MetricCard } from "@/components/metric-card";
 import { MicIcon, ClockIcon, CalendarIcon, TrendingUpIcon } from "lucide-react";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function SessionsPage() {
   const [sessions, stats] = await Promise.all([
@@ -50,7 +53,7 @@ export default async function SessionsPage() {
         />
       </div>
       <div className="px-4 lg:px-6">
-        <SessionsTable data={sessions} />
+        <SessionsPageClient data={sessions} />
       </div>
     </>
   );

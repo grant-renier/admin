@@ -1,3 +1,7 @@
+// Structural guard: this module holds the SERVICE-ROLE key. Importing it
+// from any "use client" file must fail the build, not leak at runtime.
+import "server-only";
+
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/supabase";
 

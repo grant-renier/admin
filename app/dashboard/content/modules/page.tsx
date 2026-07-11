@@ -1,6 +1,10 @@
-import { getModules, ModuleEditor } from "@/features/content";
+import { ModuleEditor } from "@/features/content";
+import { getModules } from "@/features/content/queries";
 import { MetricCard } from "@/components/metric-card";
 import { LayoutGridIcon, ToggleLeftIcon } from "lucide-react";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function ModulesPage() {
   const modules = await getModules();

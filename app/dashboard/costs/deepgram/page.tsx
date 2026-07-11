@@ -1,8 +1,11 @@
-import { getDailyDeepgramUsage, getCostSummary } from "@/features/costs";
+import { getDailyDeepgramUsage, getCostSummary } from "@/features/costs/queries";
 import { DeepgramUsageChart } from "@/features/costs";
 import { MetricCard } from "@/components/metric-card";
 import { AudioWaveformIcon, DollarSignIcon, ClockIcon } from "lucide-react";
 import { COST_CONSTANTS } from "@/features/costs/lib/cost-calculator";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function DeepgramPage() {
   const [daily, summary] = await Promise.all([

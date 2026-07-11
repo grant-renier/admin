@@ -1,5 +1,10 @@
 import { supabaseAdmin } from "@/lib/supabase/client";
-import type { UserWithStats, UserDetail, OnboardingStep } from "./types";
+import type {
+  UserWithStats,
+  UserDetail,
+  OnboardingStep,
+  UserRole,
+} from "./types";
 
 export async function getUsers(): Promise<UserWithStats[]> {
   const { data: profiles } = await supabaseAdmin
@@ -69,6 +74,7 @@ export async function getUserById(id: string): Promise<UserDetail | null> {
     { data: subscription },
     { count: projectCount },
     messagesData,
+    authUserResult,
   ] = await Promise.all([
     supabaseAdmin
       .from("sessions")
@@ -102,6 +108,8 @@ export async function getUserById(id: string): Promise<UserDetail | null> {
           );
         return count ?? 0;
       }),
+    // Banned state lives on the GoTrue auth record, not the profiles row.
+    supabaseAdmin.auth.admin.getUserById(id),
   ]);
 
   return {
@@ -111,7 +119,68 @@ export async function getUserById(id: string): Promise<UserDetail | null> {
     subscriptionStatus: subscription?.status ?? null,
     projectCount: projectCount ?? 0,
     totalMessages: messagesData,
+    bannedUntil: authUserResult.data.user?.banned_until ?? null,
   };
+}
+
+/**
+ * Sets the profile role for a user. Roles `admin` and `beta` are exempt
+ * from the web app's access-gate kill switch, so this is the lever the
+ * team uses to keep its own accounts working after a beta cutover.
+ */
+export async function updateUserRole(
+  id: string,
+  role: UserRole
+): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ role })
+    .eq("id", id);
+  if (error) throw new Error(`Failed to update role: ${error.message}`);
+}
+
+/**
+ * Permanently deletes a user's auth account and profile row.
+ *
+ * The `profiles.id -> auth.users.id` FK cascade could not be verified from
+ * local DDL (the schema predates this repo's migrations), so the profile
+ * row is deleted explicitly as a safety net -- a no-op when the FK already
+ * cascades. Sessions, projects, and conversation data are intentionally
+ * left in place so historical analytics keep working; they become orphaned
+ * rows keyed by the deleted user id unless their own FKs cascade.
+ */
+export async function deleteUserAccount(id: string): Promise<void> {
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+  if (error) throw new Error(`Failed to delete auth user: ${error.message}`);
+
+  const { error: profileError } = await supabaseAdmin
+    .from("profiles")
+    .delete()
+    .eq("id", id);
+  if (profileError) {
+    throw new Error(
+      `Auth user deleted but profile cleanup failed: ${profileError.message}`
+    );
+  }
+}
+
+/**
+ * Bans or unbans a user at the auth layer. GoTrue has no permanent-ban
+ * flag, so banning sets ban_duration to ~100 years; unbanning passes the
+ * sentinel value "none".
+ */
+export async function setUserBanned(
+  id: string,
+  banned: boolean
+): Promise<void> {
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(id, {
+    ban_duration: banned ? "876600h" : "none",
+  });
+  if (error) {
+    throw new Error(
+      `Failed to ${banned ? "ban" : "unban"} user: ${error.message}`
+    );
+  }
 }
 
 export async function getUserStats() {

@@ -454,6 +454,26 @@ export interface Database {
         >;
         Relationships: [];
       };
+      // Bias profile snapshot per session. The table may not exist in every
+      // environment yet -- callers must tolerate "relation does not exist".
+      session_bias_profiles: {
+        Row: {
+          id: string;
+          session_id: string;
+          user_id: string | null;
+          profile: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: {
+          session_id: string;
+          user_id?: string | null;
+          profile?: Record<string, unknown>;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["session_bias_profiles"]["Insert"]
+        >;
+        Relationships: [];
+      };
       project_qa: {
         Row: {
           id: string;

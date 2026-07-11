@@ -1,4 +1,4 @@
-import { getDailyAIChatUsage, getCostSummary } from "@/features/costs";
+import { getDailyAIChatUsage, getCostSummary } from "@/features/costs/queries";
 import { AITokenChart } from "@/features/costs";
 import { MetricCard } from "@/components/metric-card";
 import {
@@ -7,6 +7,9 @@ import {
   MessageSquareIcon,
   CoinsIcon,
 } from "lucide-react";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function AIChatPage() {
   const [daily, summary] = await Promise.all([

@@ -1,12 +1,10 @@
-import {
-  getUsers,
-  getUserStats,
-  getOnboardingFunnel,
-  UsersTable,
-  OnboardingFunnel,
-} from "@/features/users";
+import { UsersTable, OnboardingFunnel } from "@/features/users";
+import { getUsers, getUserStats, getOnboardingFunnel } from "@/features/users/queries";
 import { MetricCard } from "@/components/metric-card";
 import { UsersIcon, UserPlusIcon, ActivityIcon, CalendarIcon } from "lucide-react";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
   const [users, stats, funnel] = await Promise.all([

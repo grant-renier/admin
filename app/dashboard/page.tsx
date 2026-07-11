@@ -27,6 +27,9 @@ import {
   calculateBridgeCost,
   estimateTokenSplit,
 } from "@/features/costs/lib/cost-calculator";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 async function getOverviewMetrics() {
   const now = new Date();

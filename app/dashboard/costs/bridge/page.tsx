@@ -1,4 +1,4 @@
-import { getDailyBridgeUsage, getCostSummary } from "@/features/costs";
+import { getDailyBridgeUsage, getCostSummary } from "@/features/costs/queries";
 import { MetricCard } from "@/components/metric-card";
 import { BridgeUsageChart } from "@/features/costs/components/bridge-usage-chart";
 import {
@@ -8,6 +8,9 @@ import {
   MicIcon,
 } from "lucide-react";
 import { COST_CONSTANTS } from "@/features/costs/lib/cost-calculator";
+// Admin dashboards must always show live Supabase data, never a
+// build-time snapshot.
+export const dynamic = "force-dynamic";
 
 export default async function BridgePage() {
   const [daily, summary] = await Promise.all([
