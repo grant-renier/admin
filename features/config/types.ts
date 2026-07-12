@@ -11,6 +11,12 @@ export interface AccessGateConfig {
   registrations_enabled: boolean;
   message: string | null;
   upgrade_url: string | null;
+  /**
+   * When true, the web client enforces entitlement (paywall) gating:
+   * locked nav, add-on gates, hour ceilings. False = everything unlocked
+   * (the beta default until the commercial flip).
+   */
+  entitlements_enforced: boolean;
 }
 
 /** Open default used when the row (or table) doesn't exist yet. */
@@ -19,4 +25,5 @@ export const DEFAULT_ACCESS_GATE: AccessGateConfig = {
   registrations_enabled: true,
   message: null,
   upgrade_url: null,
+  entitlements_enforced: false,
 };

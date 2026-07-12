@@ -36,6 +36,9 @@ export function AccessGateForm({ initial }: { initial: AccessGateConfig }) {
   );
   const [message, setMessage] = useState(initial.message ?? "");
   const [upgradeUrl, setUpgradeUrl] = useState(initial.upgrade_url ?? "");
+  const [entitlementsEnforced, setEntitlementsEnforced] = useState(
+    initial.entitlements_enforced
+  );
   const [isPending, startTransition] = useTransition();
 
   const save = () => {
@@ -46,6 +49,7 @@ export function AccessGateForm({ initial }: { initial: AccessGateConfig }) {
         fd.set("registrations_enabled", String(registrations));
         fd.set("message", message);
         fd.set("upgrade_url", upgradeUrl);
+        fd.set("entitlements_enforced", String(entitlementsEnforced));
         await updateAccessGateAction(fd);
         toast.success("Access gate saved — live clients update within a minute");
       } catch {
@@ -79,6 +83,22 @@ export function AccessGateForm({ initial }: { initial: AccessGateConfig }) {
           </p>
         </div>
         <Switch checked={registrations} onCheckedChange={setRegistrations} />
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-border/50 p-3">
+        <div>
+          <p className="text-sm font-medium">
+            Enforce entitlements (paywall gating)
+          </p>
+          <p className="text-xs text-muted-foreground">
+            On activates the web client&apos;s add-on locks, hour ceilings, and
+            category access checks. Off (default) keeps everything unlocked.
+          </p>
+        </div>
+        <Switch
+          checked={entitlementsEnforced}
+          onCheckedChange={setEntitlementsEnforced}
+        />
       </div>
 
       <div className="space-y-2">

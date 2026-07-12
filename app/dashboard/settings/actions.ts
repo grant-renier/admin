@@ -21,6 +21,7 @@ export async function updateAccessGateAction(formData: FormData) {
     registrations_enabled: formData.get("registrations_enabled") === "true",
     message: ((formData.get("message") as string) || "").trim() || null,
     upgrade_url: ((formData.get("upgrade_url") as string) || "").trim() || null,
+    entitlements_enforced: formData.get("entitlements_enforced") === "true",
   });
   revalidatePath("/dashboard/settings");
 }

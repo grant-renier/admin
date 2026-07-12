@@ -11,6 +11,14 @@ function asMode(value: unknown): AccessGateMode {
 }
 
 /**
+ * Strict boolean parse — anything but literal true (including a missing
+ * legacy row) reads as false, the safe "not enforced" default.
+ */
+function asBool(value: unknown): boolean {
+  return value === true;
+}
+
+/**
  * Read the current access gate. Falls back to the open default when the
  * `app_config` table/row doesn't exist yet (migration 0004 not applied),
  * so the settings page renders instead of crashing.
@@ -30,6 +38,7 @@ export async function getAccessGate(): Promise<AccessGateConfig> {
       message: typeof value.message === "string" ? value.message : null,
       upgrade_url:
         typeof value.upgrade_url === "string" ? value.upgrade_url : null,
+      entitlements_enforced: asBool(value.entitlements_enforced),
     };
   } catch {
     return DEFAULT_ACCESS_GATE;
