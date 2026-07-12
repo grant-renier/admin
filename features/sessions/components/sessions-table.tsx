@@ -7,6 +7,7 @@ import type { SessionWithUser } from "../types";
 import Link from "next/link";
 import { ArrowUpDown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatCategoryLabel } from "@/lib/utils";
 
 const baseColumns: ColumnDef<SessionWithUser>[] = [
   {
@@ -43,9 +44,13 @@ const baseColumns: ColumnDef<SessionWithUser>[] = [
   },
   {
     accessorKey: "module_slug",
-    header: "Module",
+    header: "Category",
     cell: ({ row }) => (
-      <Badge variant="outline">{row.original.module_slug ?? "N/A"}</Badge>
+      <Badge variant="outline">
+        {row.original.module_slug
+          ? formatCategoryLabel(row.original.module_slug)
+          : "N/A"}
+      </Badge>
     ),
   },
   {

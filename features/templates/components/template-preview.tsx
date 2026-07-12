@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatCategoryLabel } from "@/lib/utils";
 import type { TemplateWithUsage } from "../types";
 
 export function TemplatePreview({
@@ -33,7 +34,9 @@ export function TemplatePreview({
               </Badge>
             )}
             <Badge variant="outline">
-              {template.module_slug ?? "Global"}
+              {template.module_slug
+                ? formatCategoryLabel(template.module_slug)
+                : "Global"}
             </Badge>
           </div>
         </div>

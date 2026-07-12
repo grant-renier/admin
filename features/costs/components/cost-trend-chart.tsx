@@ -30,8 +30,11 @@ export function CostTrendChart({ data }: CostTrendChartProps) {
   return (
     <Card className="border-border/50">
       <CardHeader>
-        <CardTitle>Cost Trend (30 days)</CardTitle>
-        <CardDescription>Daily breakdown by service</CardDescription>
+        <CardTitle>Estimated Cost Trend (30 days)</CardTitle>
+        <CardDescription>
+          Daily breakdown by service &mdash; estimated from usage at hardcoded
+          unit rates
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">

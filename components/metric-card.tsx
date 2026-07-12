@@ -15,6 +15,12 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   change?: number;
+  /**
+   * When true, the change badge renders in muted styling with no up/down
+   * coloring -- used when the underlying sample is too small for the
+   * percentage to be meaningful (e.g. -50% from 2 sessions to 1).
+   */
+  changeNeutral?: boolean;
   subtitle?: string;
   icon?: LucideIcon;
   accent?: AccentColor;
@@ -61,18 +67,21 @@ export function MetricCard({
   title,
   value,
   change,
+  changeNeutral = false,
   subtitle,
   icon: Icon,
   accent = "default",
   compact = false,
 }: MetricCardProps) {
-  const isPositive = change !== undefined && change > 0;
-  const isNegative = change !== undefined && change < 0;
-  const TrendIcon = isPositive
-    ? TrendingUpIcon
-    : isNegative
-      ? TrendingDownIcon
-      : MinusIcon;
+  const isPositive = change !== undefined && change > 0 && !changeNeutral;
+  const isNegative = change !== undefined && change < 0 && !changeNeutral;
+  const TrendIcon = changeNeutral
+    ? MinusIcon
+    : isPositive
+      ? TrendingUpIcon
+      : isNegative
+        ? TrendingDownIcon
+        : MinusIcon;
   const styles = accentStyles[accent];
 
   return (
@@ -106,11 +115,18 @@ export function MetricCard({
             <Badge
               variant="outline"
               className={
-                isPositive
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
-                  : isNegative
-                    ? "border-destructive/30 bg-destructive/10 text-destructive"
-                    : ""
+                changeNeutral
+                  ? "text-muted-foreground"
+                  : isPositive
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+                    : isNegative
+                      ? "border-destructive/30 bg-destructive/10 text-destructive"
+                      : ""
+              }
+              title={
+                changeNeutral
+                  ? "Small sample -- week-over-week % is not meaningful yet"
+                  : undefined
               }
             >
               <TrendIcon className="size-3" />

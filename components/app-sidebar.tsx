@@ -34,7 +34,15 @@ import {
   LogOutIcon,
 } from "lucide-react";
 
-const navGroups = [
+interface NavItem {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+  /** Optional status tag rendered after the label (e.g. "Soon" for stubs). */
+  badge?: string;
+}
+
+const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Overview",
     items: [
@@ -77,7 +85,7 @@ const navGroups = [
     label: "Content",
     items: [
       {
-        title: "Modules",
+        title: "Categories",
         url: "/dashboard/content/modules",
         icon: LayoutGridIcon,
       },
@@ -85,6 +93,8 @@ const navGroups = [
         title: "App Copy",
         url: "/dashboard/content/app-copy",
         icon: FileTextIcon,
+        // Stub page -- no copy table in Supabase yet, so flag it honestly.
+        badge: "Soon",
       },
     ],
   },
@@ -194,6 +204,11 @@ export function AppSidebar({
                       >
                         <item.icon />
                         <span>{item.title}</span>
+                        {item.badge && (
+                          <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+                            {item.badge}
+                          </span>
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );

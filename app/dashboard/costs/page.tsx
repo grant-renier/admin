@@ -1,4 +1,5 @@
 import { CostOverviewCards, CostTrendChart, PerSessionCostTable } from "@/features/costs";
+import { CostEstimateNote } from "@/components/cost-estimate-note";
 import { getCostSummary, getDailyDeepgramUsage, getDailyAIChatUsage, getDailyBridgeUsage, getPerSessionCosts } from "@/features/costs/queries";
 // Admin dashboards must always show live Supabase data, never a
 // build-time snapshot.
@@ -40,7 +41,10 @@ export default async function CostOverviewPage() {
         <CostTrendChart data={trendData} />
       </div>
       <div className="px-4 lg:px-6">
-        <h3 className="text-lg font-semibold mb-3">Per-Session Costs</h3>
+        <h3 className="text-lg font-semibold">Per-Session Costs (Estimated)</h3>
+        <div className="mt-1 mb-3">
+          <CostEstimateNote />
+        </div>
         <PerSessionCostTable data={perSession} />
       </div>
     </>

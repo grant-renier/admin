@@ -1,6 +1,7 @@
 import { getDailyDeepgramUsage, getCostSummary } from "@/features/costs/queries";
 import { DeepgramUsageChart } from "@/features/costs";
 import { MetricCard } from "@/components/metric-card";
+import { CostEstimateNote } from "@/components/cost-estimate-note";
 import { AudioWaveformIcon, DollarSignIcon, ClockIcon } from "lucide-react";
 import { COST_CONSTANTS } from "@/features/costs/lib/cost-calculator";
 // Admin dashboards must always show live Supabase data, never a
@@ -20,8 +21,9 @@ export default async function DeepgramPage() {
     <>
       <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-4">
         <MetricCard
-          title="Deepgram Cost"
+          title="Deepgram Cost (Estimated)"
           value={`$${summary.deepgramTotal.toFixed(2)}`}
+          subtitle="Minutes × hardcoded rate"
           icon={DollarSignIcon}
           accent="primary"
           compact
@@ -47,6 +49,9 @@ export default async function DeepgramPage() {
           accent="amber"
           compact
         />
+      </div>
+      <div className="px-4 lg:px-6">
+        <CostEstimateNote />
       </div>
       <div className="px-4 lg:px-6">
         <DeepgramUsageChart data={daily} />

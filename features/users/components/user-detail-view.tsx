@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { UserDetail } from "../types";
 import Link from "next/link";
+import { formatCategoryLabel } from "@/lib/utils";
 
 export function UserDetailView({ user }: { user: UserDetail }) {
   const totalMins = user.sessions.reduce(
@@ -105,7 +106,10 @@ export function UserDetailView({ user }: { user: UserDetail }) {
                     <div>
                       <p className="text-sm font-medium">{s.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {s.module_slug ?? "No module"} &middot;{" "}
+                        {s.module_slug
+                          ? formatCategoryLabel(s.module_slug)
+                          : "No category"}{" "}
+                        &middot;{" "}
                         {Math.round(s.duration / 60)} min
                       </p>
                     </div>

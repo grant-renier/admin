@@ -150,7 +150,7 @@ export function EducationalForm({
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="module_slug">Module</Label>
+              <Label htmlFor="module_slug">Category</Label>
               <Select
                 value={moduleSlug}
                 onValueChange={(v) => v && setModuleSlug(v)}
@@ -159,7 +159,7 @@ export function EducationalForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Modules</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   <SelectItem value="golf911">Golf 911</SelectItem>
                   <SelectItem value="executives">Executives</SelectItem>
                   <SelectItem value="dating">Dating</SelectItem>

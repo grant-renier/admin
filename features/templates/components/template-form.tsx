@@ -115,7 +115,9 @@ export function TemplateForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="module_slug">Module slug</Label>
+              {/* Field keeps the module_slug DB column name; only the
+                  user-facing label says Category. */}
+              <Label htmlFor="module_slug">Category slug</Label>
               <Input
                 id="module_slug"
                 name="module_slug"

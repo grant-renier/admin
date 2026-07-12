@@ -15,7 +15,7 @@ export default async function ModulesPage() {
     <>
       <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-4">
         <MetricCard
-          title="Total Modules"
+          title="Total Categories"
           value={modules.length}
           icon={LayoutGridIcon}
           accent="primary"

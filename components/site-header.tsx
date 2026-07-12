@@ -13,7 +13,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/dashboard/costs/deepgram": "Deepgram Usage",
   "/dashboard/costs/ai-chat": "AI Chat Tokens",
   "/dashboard/costs/bridge": "Bridge / Gemini",
-  "/dashboard/content/modules": "Modules",
+  "/dashboard/content/modules": "Categories",
   "/dashboard/content/app-copy": "App Copy",
   "/dashboard/learn/educational": "Educational Content",
   "/dashboard/learn/psychometrics": "Psychometric Scales",

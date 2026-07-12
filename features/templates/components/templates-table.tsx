@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import type { TemplateWithUsage } from "../types";
 import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatCategoryLabel } from "@/lib/utils";
 
 interface TemplatesTableProps {
   data: TemplateWithUsage[];
@@ -37,9 +38,13 @@ export function TemplatesTable({ data, onEdit, onDelete }: TemplatesTableProps) 
     },
     {
       accessorKey: "module_slug",
-      header: "Module",
+      header: "Category",
       cell: ({ row }) => (
-        <Badge variant="outline">{row.original.module_slug ?? "Global"}</Badge>
+        <Badge variant="outline">
+          {row.original.module_slug
+            ? formatCategoryLabel(row.original.module_slug)
+            : "Global"}
+        </Badge>
       ),
     },
     {

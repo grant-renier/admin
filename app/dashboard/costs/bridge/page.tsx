@@ -1,5 +1,6 @@
 import { getDailyBridgeUsage, getCostSummary } from "@/features/costs/queries";
 import { MetricCard } from "@/components/metric-card";
+import { CostEstimateNote } from "@/components/cost-estimate-note";
 import { BridgeUsageChart } from "@/features/costs/components/bridge-usage-chart";
 import {
   ZapIcon,
@@ -25,8 +26,9 @@ export default async function BridgePage() {
     <>
       <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-4">
         <MetricCard
-          title="Bridge Cost"
+          title="Bridge Cost (Estimated)"
           value={`$${summary.bridgeTotal.toFixed(2)}`}
+          subtitle="Chunks × hardcoded rate"
           icon={DollarSignIcon}
           accent="primary"
           compact
@@ -53,6 +55,9 @@ export default async function BridgePage() {
           accent="amber"
           compact
         />
+      </div>
+      <div className="px-4 lg:px-6">
+        <CostEstimateNote />
       </div>
       <div className="px-4 lg:px-6">
         <BridgeUsageChart data={daily} />

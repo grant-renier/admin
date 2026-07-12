@@ -1,6 +1,7 @@
 import { getDailyAIChatUsage, getCostSummary } from "@/features/costs/queries";
 import { AITokenChart } from "@/features/costs";
 import { MetricCard } from "@/components/metric-card";
+import { CostEstimateNote } from "@/components/cost-estimate-note";
 import {
   BrainCircuitIcon,
   DollarSignIcon,
@@ -25,8 +26,9 @@ export default async function AIChatPage() {
     <>
       <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-4">
         <MetricCard
-          title="AI Chat Cost"
+          title="AI Chat Cost (Estimated)"
           value={`$${summary.aiChatTotal.toFixed(2)}`}
+          subtitle="Tokens × hardcoded rates"
           icon={DollarSignIcon}
           accent="primary"
           compact
@@ -52,6 +54,9 @@ export default async function AIChatPage() {
           accent="emerald"
           compact
         />
+      </div>
+      <div className="px-4 lg:px-6">
+        <CostEstimateNote />
       </div>
       <div className="px-4 lg:px-6">
         <AITokenChart data={daily} />

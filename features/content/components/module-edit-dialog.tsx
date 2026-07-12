@@ -40,7 +40,7 @@ export function ModuleEditDialog({
     startTransition(async () => {
       try {
         await updateModuleDetailsAction(fd);
-        toast.success("Module updated");
+        toast.success("Category updated");
         onOpenChange(false);
       } catch (err) {
         toast.error(

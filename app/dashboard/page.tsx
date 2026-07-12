@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/client";
 import { MetricCard } from "@/components/metric-card";
+import { CostEstimateNote } from "@/components/cost-estimate-note";
 import {
   Card,
   CardContent,
@@ -103,13 +104,26 @@ async function getOverviewMetrics() {
       ? (((sessionsThisWeek ?? 0) - sessionsLastWeek) / sessionsLastWeek) * 100
       : 0;
 
+  // With single-digit weekly counts a week-over-week percentage is noise
+  // (2 -> 1 sessions reads as an alarming -50%), so flag the badge to
+  // render neutrally until there is enough volume to trend.
+  const GROWTH_SAMPLE_FLOOR = 5;
+  const userGrowthSparse =
+    (usersThisWeek ?? 0) < GROWTH_SAMPLE_FLOOR ||
+    (usersLastWeek ?? 0) < GROWTH_SAMPLE_FLOOR;
+  const sessionGrowthSparse =
+    (sessionsThisWeek ?? 0) < GROWTH_SAMPLE_FLOOR ||
+    (sessionsLastWeek ?? 0) < GROWTH_SAMPLE_FLOOR;
+
   return {
     totalUsers: totalUsers ?? 0,
     activeUsers,
     userGrowth,
+    userGrowthSparse,
     totalSessions: totalSessions ?? 0,
     sessionsThisWeek: sessionsThisWeek ?? 0,
     sessionGrowth,
+    sessionGrowthSparse,
     totalAudioHours: Math.round((totalDuration / 3600) * 100) / 100,
     deepgramCost,
     aiChatCost,
@@ -217,6 +231,7 @@ export default async function DashboardPage() {
             title="Total Users"
             value={metrics.totalUsers}
             change={metrics.userGrowth !== 0 ? metrics.userGrowth : undefined}
+            changeNeutral={metrics.userGrowthSparse}
             subtitle="All registered"
             icon={UsersIcon}
             accent="primary"
@@ -240,6 +255,7 @@ export default async function DashboardPage() {
             change={
               metrics.sessionGrowth !== 0 ? metrics.sessionGrowth : undefined
             }
+            changeNeutral={metrics.sessionGrowthSparse}
             subtitle={`${metrics.sessionsThisWeek} this week`}
             icon={MicIcon}
             accent="blue"
@@ -259,8 +275,9 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-4">
         <Link href="/dashboard/costs">
           <MetricCard
-            title="Total Cost"
+            title="Total Cost (Estimated)"
             value={`$${metrics.totalCost.toFixed(2)}`}
+            subtitle="All providers combined"
             icon={DollarSignIcon}
             accent="rose"
             compact
@@ -268,7 +285,7 @@ export default async function DashboardPage() {
         </Link>
         <Link href="/dashboard/costs/deepgram">
           <MetricCard
-            title="Deepgram"
+            title="Deepgram (Estimated)"
             value={`$${metrics.deepgramCost.toFixed(2)}`}
             subtitle="Speech-to-text"
             icon={AudioWaveformIcon}
@@ -278,7 +295,7 @@ export default async function DashboardPage() {
         </Link>
         <Link href="/dashboard/costs/ai-chat">
           <MetricCard
-            title="AI Chat"
+            title="AI Chat (Estimated)"
             value={`$${metrics.aiChatCost.toFixed(2)}`}
             subtitle="OpenRouter LLM"
             icon={BrainCircuitIcon}
@@ -288,7 +305,7 @@ export default async function DashboardPage() {
         </Link>
         <Link href="/dashboard/costs/bridge">
           <MetricCard
-            title="Bridge"
+            title="Bridge (Estimated)"
             value={`$${metrics.bridgeCost.toFixed(2)}`}
             subtitle="Gemini scoring"
             icon={ZapIcon}
@@ -296,6 +313,9 @@ export default async function DashboardPage() {
             compact
           />
         </Link>
+      </div>
+      <div className="px-4 lg:px-6 -mt-1">
+        <CostEstimateNote />
       </div>
 
       <div className="grid grid-cols-2 gap-3 px-4 lg:px-6 @xl/main:grid-cols-4">

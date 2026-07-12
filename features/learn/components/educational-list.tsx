@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { EducationalContentRow } from "../types";
 import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { formatCategoryLabel } from "@/lib/utils";
 
 interface EducationalListProps {
   data: EducationalContentRow[];
@@ -35,9 +36,13 @@ export function EducationalList({
     },
     {
       accessorKey: "module_slug",
-      header: "Module",
+      header: "Category",
       cell: ({ row }) => (
-        <Badge variant="outline">{row.original.module_slug ?? "All"}</Badge>
+        <Badge variant="outline">
+          {row.original.module_slug
+            ? formatCategoryLabel(row.original.module_slug)
+            : "All"}
+        </Badge>
       ),
     },
     {
