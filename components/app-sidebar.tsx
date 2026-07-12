@@ -75,7 +75,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         icon: BrainCircuitIcon,
       },
       {
-        title: "Bridge / Gemini",
+        title: "Bridge / LLM Scoring",
         url: "/dashboard/costs/bridge",
         icon: ZapIcon,
       },

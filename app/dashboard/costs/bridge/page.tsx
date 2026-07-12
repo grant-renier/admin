@@ -50,7 +50,7 @@ export default async function BridgePage() {
         <MetricCard
           title="Rate"
           value={`$${COST_CONSTANTS.BRIDGE_COST_PER_CHUNK}/chunk`}
-          subtitle="Gemini Flash pricing"
+          subtitle="LLM scoring estimate"
           icon={ZapIcon}
           accent="amber"
           compact

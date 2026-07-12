@@ -307,7 +307,7 @@ export default async function DashboardPage() {
           <MetricCard
             title="Bridge (Estimated)"
             value={`$${metrics.bridgeCost.toFixed(2)}`}
-            subtitle="Gemini scoring"
+            subtitle="LLM scoring (OpenRouter)"
             icon={ZapIcon}
             accent="emerald"
             compact

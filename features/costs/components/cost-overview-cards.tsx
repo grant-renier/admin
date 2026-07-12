@@ -43,7 +43,7 @@ export function CostOverviewCards({ summary }: { summary: CostSummary }) {
         <MetricCard
           title="Bridge (Estimated)"
           value={fmt(summary.bridgeTotal)}
-          subtitle="Gemini · $0.00025/chunk"
+          subtitle="OpenRouter · $0.00025/chunk est."
           icon={ZapIcon}
           accent="emerald"
           compact

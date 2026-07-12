@@ -23,7 +23,7 @@ export function BridgeUsageChart({ data }: { data: DailyBridgeUsage[] }) {
     <Card className="border-border/50">
       <CardHeader>
         <CardTitle>Bridge Chunk Assessments</CardTitle>
-        <CardDescription>Daily Gemini Flash processing</CardDescription>
+        <CardDescription>Daily LLM chunk scoring (OpenRouter)</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
