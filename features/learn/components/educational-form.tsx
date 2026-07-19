@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ModuleSelect, ALL_MODULES_VALUE } from "@/components/module-select";
+import { MarkdownPreview } from "@/components/markdown-preview";
 import { toast } from "sonner";
 import type { EducationalContentRow } from "../types";
 
@@ -37,17 +39,21 @@ export function EducationalForm({
   const [isPending, startTransition] = useTransition();
   const [type, setType] = useState<string>(editingItem?.type ?? "article");
   const [moduleSlug, setModuleSlug] = useState<string>(
-    editingItem?.module_slug ?? "all"
+    editingItem?.module_slug ?? ALL_MODULES_VALUE
   );
   const [published, setPublished] = useState(
     editingItem?.is_published ?? false
   );
+  // Live markdown preview for the body, mirroring the blog editor (P0 fix).
+  const [body, setBody] = useState(editingItem?.content_body ?? "");
+  const [preview, setPreview] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const fd = new FormData(formRef.current!);
     fd.set("type", type);
-    fd.set("module_slug", moduleSlug === "all" ? "" : moduleSlug);
+    fd.set("module_slug", moduleSlug === ALL_MODULES_VALUE ? "" : moduleSlug);
+    fd.set("content_body", body);
     fd.set("is_published", String(published));
     if (editingItem) fd.set("id", editingItem.id);
 
@@ -55,7 +61,10 @@ export function EducationalForm({
       try {
         await onSubmit(fd);
         toast.success(editingItem ? "Content updated" : "Content created");
-        if (!editingItem) formRef.current?.reset();
+        if (!editingItem) {
+          formRef.current?.reset();
+          setBody("");
+        }
         onCancel?.();
       } catch (err) {
         toast.error(
@@ -137,37 +146,40 @@ export function EducationalForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content_body">Content Body</Label>
-            <Textarea
-              id="content_body"
-              name="content_body"
-              rows={8}
-              defaultValue={editingItem?.content_body ?? ""}
-              placeholder="Markdown content for articles and guides..."
-              className="font-mono text-sm"
-            />
+            <div className="flex items-center justify-between">
+              <Label htmlFor="content_body">Content Body (Markdown)</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-pressed={preview}
+                onClick={() => setPreview((p) => !p)}
+              >
+                {preview ? "Edit" : "Preview"}
+              </Button>
+            </div>
+            {preview ? (
+              <MarkdownPreview source={body} aria-label="Markdown preview" />
+            ) : (
+              <Textarea
+                id="content_body"
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={8}
+                placeholder="Markdown content for articles and guides..."
+                className="font-mono text-sm"
+              />
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="module_slug">Category</Label>
-              <Select
+              <ModuleSelect
+                id="module_slug"
                 value={moduleSlug}
-                onValueChange={(v) => v && setModuleSlug(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="golf911">Golf 911</SelectItem>
-                  <SelectItem value="executives">Executives</SelectItem>
-                  <SelectItem value="dating">Dating</SelectItem>
-                  <SelectItem value="politics">Politics</SelectItem>
-                  <SelectItem value="markets">Markets</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                </SelectContent>
-              </Select>
+                onValueChange={setModuleSlug}
+              />
             </div>
 
             <div className="space-y-2">

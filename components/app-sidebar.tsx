@@ -112,8 +112,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         icon: BrainIcon,
       },
       {
-        title: "Blog / Articles",
-        url: "/dashboard/learn/blogs",
+        title: "Blog Posts",
+        url: "/dashboard/blog",
         icon: BookOpenIcon,
       },
     ],

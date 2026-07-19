@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { MarkdownPreview } from "@/components/markdown-preview";
 import { toast } from "sonner";
 import type { EducationalContentRow } from "../types";
 
@@ -70,6 +71,7 @@ export function BlogEditor({
             type="button"
             variant="outline"
             size="sm"
+            aria-pressed={preview}
             onClick={() => setPreview(!preview)}
           >
             {preview ? "Edit" : "Preview"}
@@ -117,9 +119,7 @@ export function BlogEditor({
               Article Body (Markdown)
             </Label>
             {preview ? (
-              <div className="min-h-[300px] rounded-md border bg-muted/30 p-4 prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                {body || "Nothing to preview."}
-              </div>
+              <MarkdownPreview source={body} aria-label="Markdown preview" />
             ) : (
               <Textarea
                 id="content_body"
