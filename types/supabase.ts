@@ -307,6 +307,49 @@ export interface Database {
         >;
         Relationships: [];
       };
+      // Standalone blog authoring table. Mirrors the web repo's `blog_posts`
+      // migration; blogs live here (not on educational_content) so they can
+      // carry SEO/scheduling fields without polluting the learn schema.
+      blog_posts: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          summary: string | null;
+          body: string;
+          thumbnail_url: string | null;
+          module_slug: string | null;
+          tags: string[];
+          author: string | null;
+          meta_description: string | null;
+          canonical_url: string | null;
+          reading_time: number | null;
+          is_published: boolean;
+          published_at: string | null;
+          scheduled_for: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          summary?: string | null;
+          body?: string;
+          thumbnail_url?: string | null;
+          module_slug?: string | null;
+          tags?: string[];
+          author?: string | null;
+          meta_description?: string | null;
+          canonical_url?: string | null;
+          reading_time?: number | null;
+          is_published?: boolean;
+          published_at?: string | null;
+          scheduled_for?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["blog_posts"]["Insert"]>;
+        Relationships: [];
+      };
       chunk_assessments: {
         Row: {
           id: string;
