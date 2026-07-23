@@ -350,6 +350,44 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["blog_posts"]["Insert"]>;
         Relationships: [];
       };
+      // Persona Atlas: leadership archetypes surfaced in the web app. Managed
+      // from the admin panel alongside blog posts; the shared Atlas PDF lives
+      // in the public `persona-atlas` storage bucket (see features/personas).
+      personas: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          archetype_title: string | null;
+          summary: string | null;
+          metrics: { key: string; label: string; description: string }[];
+          leadership_context: string | null;
+          communication_style: string | null;
+          display_order: number;
+          is_published: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name: string;
+          archetype_title?: string | null;
+          summary?: string | null;
+          metrics?: { key: string; label: string; description: string }[];
+          leadership_context?: string | null;
+          communication_style?: string | null;
+          display_order?: number;
+          is_published?: boolean;
+          created_by?: string | null;
+          // Writable so the service layer can stamp it on update (no trigger
+          // is assumed); the DB default covers inserts that omit it.
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["personas"]["Insert"]>;
+        Relationships: [];
+      };
       chunk_assessments: {
         Row: {
           id: string;
