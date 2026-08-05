@@ -1,5 +1,7 @@
 "use server";
 
+import { auditLog, requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import {
   createTemplate,
@@ -40,6 +42,9 @@ function parseMetrics(raw: FormDataEntryValue | null): MetricDef[] {
 }
 
 export async function createTemplateAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   await createTemplate({
     name: (formData.get("name") as string).trim(),
     description: (formData.get("description") as string)?.trim() || null,
@@ -52,6 +57,9 @@ export async function createTemplateAction(formData: FormData) {
 }
 
 export async function updateTemplateAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const id = formData.get("id") as string;
   await updateTemplate(id, {
     name: (formData.get("name") as string).trim(),
@@ -63,6 +71,10 @@ export async function updateTemplateAction(formData: FormData) {
 }
 
 export async function deleteTemplateAction(id: string) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "template.delete", String(id));
   await deleteTemplate(id);
   revalidatePath("/dashboard/templates");
 }

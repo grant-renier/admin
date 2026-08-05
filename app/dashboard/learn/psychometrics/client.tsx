@@ -69,6 +69,11 @@ export function PsychometricsPageClient({
 
       {showForm && (
         <PsychometricScaleForm
+          // Remount when the row being edited changes. The form seeds its
+          // fields from `editingItem` (uncontrolled defaultValue + useState),
+          // so without a key React reuses the instance and "Edit A -> Edit B"
+          // would submit A's scale under B's id, overwriting B.
+          key={editing?.id ?? "new"}
           editingItem={editing}
           onSubmit={handleSubmit}
           onCancel={() => {

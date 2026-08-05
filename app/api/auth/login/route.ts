@@ -3,7 +3,7 @@ import { createSessionToken, COOKIE_NAME } from "@/lib/auth";
 
 /**
  * In-memory login throttle: 5 failures per IP per 15 minutes. Resets on
- * server restart, which is acceptable for a single-admin panel — the goal
+ * server restart, which is acceptable for a single-admin panel - the goal
  * is stopping unattended brute force, not building a WAF.
  */
 const WINDOW_MS = 15 * 60 * 1000;

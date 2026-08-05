@@ -1,5 +1,7 @@
 "use server";
 
+import { auditLog, requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { deleteSession } from "@/features/sessions/queries";
 
@@ -14,6 +16,10 @@ import { deleteSession } from "@/features/sessions/queries";
  * `flagged_at timestamptz` column) before it can be built here.
  */
 export async function deleteSessionAction(id: string) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "session.delete", String(id));
   await deleteSession(id);
   revalidatePath("/dashboard/sessions");
 }

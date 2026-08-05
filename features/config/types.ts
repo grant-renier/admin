@@ -2,7 +2,7 @@
 export type AccessGateMode = "open" | "paid_only" | "maintenance";
 
 /**
- * Shape of the `app_config.access_gate` jsonb value — the version kill
+ * Shape of the `app_config.access_gate` jsonb value - the version kill
  * switch the web client polls every ~60s (see intuality-web
  * `hooks/useAppConfig.ts`).
  */

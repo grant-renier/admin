@@ -104,6 +104,11 @@ export function BlogPageClient({
 
       {showEditor && (
         <BlogPostEditor
+          // Remount when the row being edited changes. The editor seeds every
+          // field from `editingItem` in useState, so without a key React
+          // reuses the instance and "Edit A -> Edit B" would submit A's text
+          // under B's id, overwriting post B.
+          key={editing?.id ?? "new"}
           editingItem={editing}
           tagSuggestions={tagSuggestions}
           onSubmit={handleSubmit}

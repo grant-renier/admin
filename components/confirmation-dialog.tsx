@@ -20,6 +20,12 @@ interface ConfirmationDialogProps {
   confirmText: string;
   onConfirm: () => void;
   loading?: boolean;
+  /**
+   * Label while the action is in flight. Defaults to "Deleting..." because
+   * most callers delete - but this dialog also guards non-delete actions
+   * (restoring a legal version), where "Deleting..." is simply wrong.
+   */
+  loadingLabel?: string;
 }
 
 export function ConfirmationDialog({
@@ -30,6 +36,7 @@ export function ConfirmationDialog({
   confirmText,
   onConfirm,
   loading,
+  loadingLabel = "Deleting...",
 }: ConfirmationDialogProps) {
   const [input, setInput] = useState("");
 
@@ -76,7 +83,7 @@ export function ConfirmationDialog({
             onClick={handleConfirm}
             disabled={input !== confirmText || loading}
           >
-            {loading ? "Deleting..." : "Confirm"}
+            {loading ? loadingLabel : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>

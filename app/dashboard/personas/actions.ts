@@ -1,5 +1,7 @@
 "use server";
 
+import { auditLog, requireAdmin } from "@/lib/require-admin";
+
 /**
  * Server actions for the Persona Atlas. Every mutation validates its FormData
  * with Zod (zod@4) before touching Supabase, returning structured field errors
@@ -117,6 +119,9 @@ function readForm(formData: FormData) {
 export async function createPersonaAction(
   formData: FormData
 ): Promise<PersonaActionState> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const parsed = personaSchema.safeParse(readForm(formData));
   if (!parsed.success) {
     return { ok: false, errors: flattenErrors(parsed.error) };
@@ -136,6 +141,9 @@ export async function createPersonaAction(
 export async function updatePersonaAction(
   formData: FormData
 ): Promise<PersonaActionState> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const id = formData.get("id") as string;
   if (!id) return { ok: false, errors: { form: "Missing persona id" } };
   const parsed = personaSchema.safeParse(readForm(formData));
@@ -155,6 +163,10 @@ export async function updatePersonaAction(
 
 /** Delete a single persona. */
 export async function deletePersonaAction(id: string): Promise<void> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "persona.delete", String(id));
   await deletePersona(id);
   revalidatePath("/dashboard/personas");
 }
@@ -164,6 +176,9 @@ export async function setPersonaPublishedAction(
   id: string,
   published: boolean
 ): Promise<void> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   await updatePersona(id, { is_published: published });
   revalidatePath("/dashboard/personas");
 }
@@ -175,6 +190,9 @@ export async function setPersonaPublishedAction(
 export async function uploadAtlasPdfAction(
   formData: FormData
 ): Promise<{ url: string | null; error: string | null }> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { url: null, error: "No file provided" };

@@ -10,8 +10,9 @@ import { SettingsIcon, DatabaseIcon, KeyIcon, ServerIcon, PowerIcon } from "luci
 
 import { AccessGateForm } from "@/features/config/components/access-gate-form";
 import { getAccessGate } from "@/features/config/queries";
+import { isAdminAuthConfigured } from "@/lib/auth";
 
-// The access gate must show the CURRENT row, not a build-time snapshot —
+// The access gate must show the CURRENT row, not a build-time snapshot -
 // this is a kill switch, stale reads are dangerous.
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,11 @@ export default async function SettingsPage() {
   const gate = await getAccessGate();
   const hasSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const hasJwtSecret = !!process.env.ADMIN_JWT_SECRET;
+  // Presence alone is not enough: `lib/auth` requires >= 32 characters and
+  // fails closed below that, so ask the same question the auth layer asks.
+  // The panel never runs "without auth" - the previous "Dev mode (no auth)"
+  // label described behaviour that was removed.
+  const hasJwtSecret = isAdminAuthConfigured();
 
   return (
     <div className="space-y-6 px-4 lg:px-6">
@@ -89,7 +94,7 @@ export default async function SettingsPage() {
                 <div>
                   <p className="text-sm font-medium">JWT Secret</p>
                   <p className="text-xs text-muted-foreground">
-                    ADMIN_JWT_SECRET
+                    ADMIN_JWT_SECRET (32+ characters, required)
                   </p>
                 </div>
               </div>
@@ -98,10 +103,10 @@ export default async function SettingsPage() {
                 className={
                   hasJwtSecret
                     ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
-                    : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+                    : "border-destructive/30 bg-destructive/10 text-destructive"
                 }
               >
-                {hasJwtSecret ? "Configured" : "Dev mode (no auth)"}
+                {hasJwtSecret ? "Configured" : "Missing or too short"}
               </Badge>
             </div>
           </div>

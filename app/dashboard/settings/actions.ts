@@ -1,5 +1,7 @@
 "use server";
 
+import { auditLog, requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 
 import { updateAccessGate } from "@/features/config/queries";
@@ -12,6 +14,10 @@ import type { AccessGateMode } from "@/features/config/types";
  * as the learn CRUD actions.
  */
 export async function updateAccessGateAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "access_gate.update", String("access_gate"));
   const rawMode = formData.get("mode") as string;
   const mode: AccessGateMode =
     rawMode === "paid_only" || rawMode === "maintenance" ? rawMode : "open";

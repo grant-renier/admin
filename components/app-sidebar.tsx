@@ -33,6 +33,9 @@ import {
   LayoutTemplateIcon,
   SettingsIcon,
   LogOutIcon,
+  HeartPulseIcon,
+  CreditCardIcon,
+  ScaleIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -55,6 +58,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { title: "Sessions", url: "/dashboard/sessions", icon: MicIcon },
       { title: "Users", url: "/dashboard/users", icon: UsersIcon },
+      { title: "Health", url: "/dashboard/health", icon: HeartPulseIcon },
     ],
   },
   {
@@ -80,6 +84,11 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         url: "/dashboard/costs/bridge",
         icon: ZapIcon,
       },
+      {
+        title: "Billing",
+        url: "/dashboard/billing",
+        icon: CreditCardIcon,
+      },
     ],
   },
   {
@@ -96,6 +105,11 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         icon: FileTextIcon,
         // Stub page -- no copy table in Supabase yet, so flag it honestly.
         badge: "Soon",
+      },
+      {
+        title: "Legal",
+        url: "/dashboard/legal",
+        icon: ScaleIcon,
       },
     ],
   },

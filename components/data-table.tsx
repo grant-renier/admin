@@ -127,7 +127,9 @@ export function DataTable<TData, TValue>({
           </Button>
           <span className="text-sm text-muted-foreground">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {/* An empty (or fully filtered-out) table has 0 pages, which
+                renders as the nonsensical "Page 1 of 0". */}
+            {Math.max(1, table.getPageCount())}
           </span>
           <Button
             variant="outline"

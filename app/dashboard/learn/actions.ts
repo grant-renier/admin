@@ -1,5 +1,7 @@
 "use server";
 
+import { auditLog, requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import {
   createEducationalContent,
@@ -11,6 +13,9 @@ import {
 } from "@/features/learn/queries";
 
 export async function createContentAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const content = {
     title: formData.get("title") as string,
     description: (formData.get("description") as string) || null,
@@ -32,6 +37,9 @@ export async function createContentAction(formData: FormData) {
 }
 
 export async function updateContentAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const id = formData.get("id") as string;
   const updates = {
     title: formData.get("title") as string,
@@ -54,12 +62,19 @@ export async function updateContentAction(formData: FormData) {
 }
 
 export async function deleteContentAction(id: string) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "learn.delete", String(id));
   await deleteEducationalContent(id);
   revalidatePath("/dashboard/learn/educational");
   revalidatePath("/dashboard/learn/blogs");
 }
 
 export async function createScaleAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const scale = {
     key: formData.get("key") as string,
     label: formData.get("label") as string,
@@ -75,6 +90,9 @@ export async function createScaleAction(formData: FormData) {
 }
 
 export async function updateScaleAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const id = formData.get("id") as string;
   const updates = {
     key: formData.get("key") as string,
@@ -90,6 +108,10 @@ export async function updateScaleAction(formData: FormData) {
 }
 
 export async function deleteScaleAction(id: string) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "scale.delete", String(id));
   await deletePsychometricScale(id);
   revalidatePath("/dashboard/learn/psychometrics");
 }

@@ -19,6 +19,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/dashboard/learn/psychometrics": "Psychometric Scales",
   "/dashboard/learn/blogs": "Blog / Articles",
   "/dashboard/templates": "Metric Templates",
+  "/dashboard/legal": "Legal Documents",
+  "/dashboard/health": "Service Health",
+  "/dashboard/billing": "Billing",
   "/dashboard/settings": "Settings",
 };
 
@@ -26,6 +29,9 @@ function getPageTitle(pathname: string): string {
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
   if (pathname.match(/^\/dashboard\/sessions\/[^/]+$/)) return "Session Detail";
   if (pathname.match(/^\/dashboard\/users\/[^/]+$/)) return "User Detail";
+  // Legal editors are one-per-slug routes (privacy-policy, eula,
+  // recording-consent); the slug itself is shown by the page, not the chrome.
+  if (pathname.match(/^\/dashboard\/legal\/[^/]+$/)) return "Legal Document";
   return "Dashboard";
 }
 

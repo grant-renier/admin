@@ -1,5 +1,7 @@
 "use server";
 
+import { auditLog, requireAdmin } from "@/lib/require-admin";
+
 /**
  * Server actions for blog authoring. Every mutation validates its FormData
  * with Zod (zod@4) before touching Supabase, returning structured field
@@ -134,6 +136,9 @@ function readForm(formData: FormData) {
 export async function createBlogPostAction(
   formData: FormData
 ): Promise<BlogActionState> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const parsed = blogSchema.safeParse(readForm(formData));
   if (!parsed.success) {
     return { ok: false, errors: flattenErrors(parsed.error) };
@@ -150,6 +155,9 @@ export async function createBlogPostAction(
 export async function updateBlogPostAction(
   formData: FormData
 ): Promise<BlogActionState> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const id = formData.get("id") as string;
   if (!id) return { ok: false, errors: { form: "Missing post id" } };
   const parsed = blogSchema.safeParse(readForm(formData));
@@ -166,6 +174,10 @@ export async function updateBlogPostAction(
 
 /** Delete a single blog post. */
 export async function deleteBlogPostAction(id: string): Promise<void> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "blog.delete", String(id));
   await deleteBlogPost(id);
   revalidatePath("/dashboard/blog");
 }
@@ -175,6 +187,9 @@ export async function bulkSetPublishedAction(
   ids: string[],
   published: boolean
 ): Promise<void> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   await Promise.all(
     ids.map((id) =>
       updateBlogPost(id, {
@@ -188,6 +203,10 @@ export async function bulkSetPublishedAction(
 
 /** Bulk delete a set of posts by id. */
 export async function bulkDeleteAction(ids: string[]): Promise<void> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "blog.bulk_delete", String(ids.join(",")));
   await Promise.all(ids.map((id) => deleteBlogPost(id)));
   revalidatePath("/dashboard/blog");
 }
@@ -199,6 +218,9 @@ export async function bulkDeleteAction(ids: string[]): Promise<void> {
 export async function uploadThumbnailAction(
   formData: FormData
 ): Promise<{ url: string | null; error: string | null }> {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { url: null, error: "No file provided" };

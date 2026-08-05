@@ -21,7 +21,7 @@ import type { AccessGateConfig, AccessGateMode } from "../types";
 const MODE_DESCRIPTIONS: Record<AccessGateMode, string> = {
   open: "Everyone can use the app. Normal operation.",
   paid_only:
-    "KILL SWITCH: retires this free version — regular users see the upgrade screen; profiles with role admin/beta keep access.",
+    "KILL SWITCH: retires this free version - regular users see the upgrade screen; profiles with role admin/beta keep access.",
   maintenance: "Everyone (including the team) sees the maintenance screen.",
 };
 
@@ -51,9 +51,9 @@ export function AccessGateForm({ initial }: { initial: AccessGateConfig }) {
         fd.set("upgrade_url", upgradeUrl);
         fd.set("entitlements_enforced", String(entitlementsEnforced));
         await updateAccessGateAction(fd);
-        toast.success("Access gate saved — live clients update within a minute");
+        toast.success("Access gate saved - live clients update within a minute");
       } catch {
-        toast.error("Save failed — is migration 0004_app_config applied?");
+        toast.error("Save failed - is migration 0004_app_config applied?");
       }
     });
   };

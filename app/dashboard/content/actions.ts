@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { updateModule } from "@/features/content/queries";
 
@@ -10,6 +12,9 @@ import { updateModule } from "@/features/content/queries";
 
 /** Persists a module's active flag and refreshes the modules page. */
 export async function toggleModuleAction(id: string, isActive: boolean) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   await updateModule(id, { is_active: isActive });
   revalidatePath("/dashboard/content/modules");
 }
@@ -19,6 +24,9 @@ export async function toggleModuleAction(id: string, isActive: boolean) {
  * Sample prompts arrive as a newline-separated textarea value.
  */
 export async function updateModuleDetailsAction(formData: FormData) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  await requireAdmin();
   const id = formData.get("id") as string;
   const updates = {
     description: (formData.get("description") as string) ?? "",

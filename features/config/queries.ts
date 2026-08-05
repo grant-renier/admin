@@ -11,7 +11,7 @@ function asMode(value: unknown): AccessGateMode {
 }
 
 /**
- * Strict boolean parse — anything but literal true (including a missing
+ * Strict boolean parse - anything but literal true (including a missing
  * legacy row) reads as false, the safe "not enforced" default.
  */
 function asBool(value: unknown): boolean {

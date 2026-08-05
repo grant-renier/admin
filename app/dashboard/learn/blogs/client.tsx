@@ -69,6 +69,11 @@ export function BlogsPageClient({
 
       {showEditor && (
         <BlogEditor
+          // Remount when the row being edited changes. The editor seeds its
+          // fields from `editingItem` (uncontrolled defaultValue + useState),
+          // so without a key React reuses the instance and "Edit A -> Edit B"
+          // would submit A's article under B's id, overwriting B.
+          key={editing?.id ?? "new"}
           editingItem={editing}
           onSubmit={handleSubmit}
           onCancel={() => {
