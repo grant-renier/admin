@@ -8,7 +8,7 @@ import {
   deleteUserAccount,
   setUserBanned,
 } from "@/features/users/queries";
-import type { UserRole } from "@/features/users/types";
+import { USER_ROLES, type UserRole } from "@/features/users/types";
 
 /** Refreshes the users list and the affected user's detail page. */
 function revalidateUserPaths(id: string) {
@@ -25,6 +25,18 @@ export async function updateUserRoleAction(id: string, role: UserRole) {
   // Authorization is enforced HERE, not only in middleware: this action
   // mutates via the service-role key, which bypasses RLS entirely.
   const actor = await requireAdmin();
+
+  // Runtime re-check, not just a TypeScript cast at the call site. A Server
+  // Action is an addressable POST endpoint (see AGENTS.md's CVE-2025-29927
+  // note) - `role: UserRole` is compile-time-only for the browser bundle
+  // that calls this via the framework's RPC, but nothing stops a raw POST
+  // from sending any string. Writing that straight to `profiles.role` would
+  // land whatever was sent, silently, since `updateUserRole` does a plain
+  // `.update({ role })` with no column CHECK constraint backing it up.
+  if (!USER_ROLES.includes(role)) {
+    throw new Error(`Invalid role: ${String(role)}`);
+  }
+
   auditLog(actor, "user.role_change", String(id));
   await updateUserRole(id, role);
   revalidateUserPaths(id);
