@@ -90,7 +90,7 @@ export const BILLING_CATALOG: Record<CatalogProductKey, CatalogLine> = {
 };
 
 /** Minutes granted by the invite-led free introduction. */
-export const FREE_INTRO_MINUTES = 15;
+export const FREE_INTRO_MINUTES = 30;
 
 /** Length of the free introductory window, in days. */
 export const FREE_INTRO_DAYS = 30;
