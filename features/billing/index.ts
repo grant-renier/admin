@@ -20,6 +20,7 @@ export { RefreshBillingButton } from "./components/refresh-billing-button";
 export { RevenueBreakdown } from "./components/revenue-breakdown";
 export { StripeConnectionNote } from "./components/stripe-connection-note";
 export { SubscriptionsTable } from "./components/subscriptions-table";
+export { GuestPurchasesTable } from "./components/guest-purchases-table";
 export { WebhookHealthPanel } from "./components/webhook-health-panel";
 export {
   MinutePressureBadge,

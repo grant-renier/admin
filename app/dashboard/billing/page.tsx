@@ -4,6 +4,7 @@ import {
   BillingSummaryCards,
   ConsumptionChart,
   FreeIntroPanel,
+  GuestPurchasesTable,
   MinuteRiskPanel,
   RevenueBreakdown,
   StripeConnectionNote,
@@ -91,9 +92,17 @@ export default async function BillingPage() {
         <BillingLookup />
       </div>
 
-      <div className="px-4 pb-6 lg:px-6">
+      <div className="px-4 lg:px-6">
         <h2 className="mb-3 text-lg font-semibold">Subscription Items</h2>
         <SubscriptionsTable data={data.table} />
+      </div>
+
+      {/* No-account purchases (currently just the $10 Persona Atlas Guide) -
+          a structurally separate table from subscription_items, see
+          GuestPurchaseRow's doc comment in features/billing/types.ts. */}
+      <div className="px-4 pb-6 lg:px-6">
+        <h2 className="mb-3 text-lg font-semibold">Guest Purchases</h2>
+        <GuestPurchasesTable data={data.guestPurchases} />
       </div>
     </>
   );
