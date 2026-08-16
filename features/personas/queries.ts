@@ -6,8 +6,20 @@
 import { supabaseAdmin } from "@/lib/supabase/client";
 import type { Persona, PersonaInsert, PersonaUpdate } from "./types";
 
-/** Storage bucket that holds the shared Persona Atlas PDF (public read). */
+/**
+ * Storage bucket that holds the shared Persona Atlas PDF.
+ *
+ * PRIVATE as of IntualityWeb migration `0013_lock_personas_table.sql` - it
+ * used to be `public: true`, which meant anyone with the raw object URL
+ * (constructible from the public Supabase URL + this bucket/key, no secret
+ * needed) could read the real paid document with no purchase and no login.
+ * Every read through this file now goes through `createSignedUrl`, which
+ * only this service-role client can mint, and expires quickly.
+ */
 export const PERSONA_ATLAS_BUCKET = "persona-atlas";
+
+/** How long an admin-preview signed URL stays valid. Short: this is a live preview link for content management, not something meant to be bookmarked or shared. */
+const PREVIEW_URL_TTL_SECONDS = 300;
 
 /** Stable object key for the single shared Atlas PDF within the bucket. */
 const ATLAS_PDF_KEY = "atlas.pdf";
@@ -74,8 +86,12 @@ export async function deletePersona(id: string): Promise<void> {
 }
 
 /**
- * Upload the single shared Atlas PDF to the public bucket at a stable key
- * (upsert), replacing any prior version, and return its public URL.
+ * Upload the single shared Atlas PDF to the (private) bucket at a stable key
+ * (upsert), replacing any prior version, and return a short-lived signed URL
+ * so the admin who just uploaded it can immediately preview what shipped.
+ * This is NOT the URL end users see - the live web app proxies the file
+ * itself through a purchase-gated route (`/api/atlas/pdf` in IntualityWeb),
+ * never this signed link.
  */
 export async function uploadAtlasPdf(
   file: File
@@ -87,15 +103,18 @@ export async function uploadAtlasPdf(
       contentType: "application/pdf",
     });
   if (error) return { url: null, error: error.message };
-  const { data } = supabaseAdmin.storage
+  const { data, error: signError } = await supabaseAdmin.storage
     .from(PERSONA_ATLAS_BUCKET)
-    .getPublicUrl(ATLAS_PDF_KEY);
-  return { url: data.publicUrl, error: null };
+    .createSignedUrl(ATLAS_PDF_KEY, PREVIEW_URL_TTL_SECONDS);
+  if (signError) return { url: null, error: signError.message };
+  return { url: data.signedUrl, error: null };
 }
 
 /**
- * Return the public URL for the shared Atlas PDF when it exists, else null.
- * Lists the bucket to confirm the object is present before advertising a link.
+ * Return a short-lived signed preview URL for the shared Atlas PDF when it
+ * exists, else null. Lists the bucket to confirm the object is present
+ * before minting a link. Admin-preview only - see {@link uploadAtlasPdf}'s
+ * doc for why this is never what an end user's browser fetches.
  */
 export async function getAtlasPdfUrl(): Promise<string | null> {
   const { data: list } = await supabaseAdmin.storage
@@ -103,8 +122,9 @@ export async function getAtlasPdfUrl(): Promise<string | null> {
     .list("", { search: ATLAS_PDF_KEY });
   const exists = (list ?? []).some((obj) => obj.name === ATLAS_PDF_KEY);
   if (!exists) return null;
-  const { data } = supabaseAdmin.storage
+  const { data, error } = await supabaseAdmin.storage
     .from(PERSONA_ATLAS_BUCKET)
-    .getPublicUrl(ATLAS_PDF_KEY);
-  return data.publicUrl;
+    .createSignedUrl(ATLAS_PDF_KEY, PREVIEW_URL_TTL_SECONDS);
+  if (error) return null;
+  return data.signedUrl;
 }
