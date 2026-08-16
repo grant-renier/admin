@@ -12,9 +12,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { PlusIcon, Trash2Icon } from "lucide-react";
+import { MODULES } from "@/lib/modules";
 import type { TemplateWithUsage } from "../types";
+
+/** Sentinel Select value for "no module" (the DB column is nullable/blank). */
+const GLOBAL_MODULE = "__global__";
 
 /** One entry in the metric_templates.metrics jsonb array (shared with the live apps). */
 interface MetricDraft {
@@ -44,6 +55,12 @@ export function TemplateForm({
   const [isSystem, setIsSystem] = useState(editingItem?.is_system ?? true);
   const [metrics, setMetrics] = useState<MetricDraft[]>(
     editingItem?.metrics ?? [{ key: "", label: "", description: "" }]
+  );
+  // Radix Select is not a native <select> - it does not participate in
+  // FormData on its own (see access-gate-form.tsx for the same pattern),
+  // so it's controlled state written into the FormData explicitly below.
+  const [moduleSlug, setModuleSlug] = useState(
+    editingItem?.module_slug ?? GLOBAL_MODULE
   );
 
   function updateMetric(index: number, patch: Partial<MetricDraft>) {
@@ -75,6 +92,7 @@ export function TemplateForm({
     const fd = new FormData(formRef.current!);
     fd.set("metrics", JSON.stringify(metrics));
     fd.set("is_system", String(isSystem));
+    fd.set("module_slug", moduleSlug === GLOBAL_MODULE ? "" : moduleSlug);
     if (editingItem) fd.set("id", editingItem.id);
 
     startTransition(async () => {
@@ -84,6 +102,7 @@ export function TemplateForm({
         if (!editingItem) {
           formRef.current?.reset();
           setMetrics([{ key: "", label: "", description: "" }]);
+          setModuleSlug(GLOBAL_MODULE);
         }
         onCancel?.();
       } catch (err) {
@@ -116,15 +135,30 @@ export function TemplateForm({
             </div>
             <div className="space-y-2">
               {/* Field keeps the module_slug DB column name; only the
-                  user-facing label says Category. */}
-              <Label htmlFor="module_slug">Category slug</Label>
-              <Input
-                id="module_slug"
-                name="module_slug"
-                defaultValue={editingItem?.module_slug ?? ""}
-                placeholder="leadership (blank = global)"
-                className="font-mono"
-              />
+                  user-facing label says Category. A <Select> bound to
+                  MODULES (not free text) because this column is read by
+                  the bridge's scoring prompts and both live clients - a
+                  typo'd slug silently detaches the template from every
+                  module it was meant to serve. */}
+              <Label htmlFor="module_slug">Category</Label>
+              <Select
+                value={moduleSlug}
+                onValueChange={(v) => setModuleSlug(v ?? GLOBAL_MODULE)}
+              >
+                <SelectTrigger id="module_slug" className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={GLOBAL_MODULE}>
+                    Global (all modules)
+                  </SelectItem>
+                  {MODULES.map((m) => (
+                    <SelectItem key={m.slug} value={m.slug}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
