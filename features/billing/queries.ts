@@ -23,6 +23,7 @@ import { supabaseAdmin } from "@/lib/supabase/client";
 import {
   BASKET_CENTS,
   NEAR_LIMIT_THRESHOLD,
+  guestProductLabel,
   monthlyAmountCents,
   productLabel,
 } from "./lib/pricing";
@@ -51,6 +52,7 @@ import {
   type SubscriptionTableRow,
   type StripeCustomerSnapshot,
   type UsagePeriodRow,
+  type GuestPurchaseTableRow,
   type WebhookEventSummary,
   type WebhookHealth,
 } from "./types";
@@ -74,6 +76,9 @@ const WEBHOOK_FEED_LIMIT = 40;
 
 /** Cap on users listed in the at/near-limit tables, newest pressure first. */
 const RISK_LIST_LIMIT = 50;
+
+/** Guest purchases listed on the billing page, newest first. */
+const GUEST_PURCHASE_FEED_LIMIT = 50;
 
 /* -------------------------------------------------------------------------- */
 /* Narrowing helpers                                                           */
@@ -549,7 +554,7 @@ export async function getBillingDashboard(): Promise<BillingDashboardData> {
     now.getTime() - CONSUMPTION_WINDOW_DAYS * 24 * 60 * 60 * 1000
   ).toISOString();
 
-  const [itemsRes, openPeriodsRes, freeIntroRes, consumptionRes, webhooks] =
+  const [itemsRes, openPeriodsRes, freeIntroRes, consumptionRes, webhooks, guestPurchasesRes] =
     await Promise.all([
       billingDb
         .from("subscription_items")
@@ -571,6 +576,13 @@ export async function getBillingDashboard(): Promise<BillingDashboardData> {
         .gte("occurred_at", windowStart)
         .order("occurred_at", { ascending: true }),
       getWebhookHealth(),
+      // Guest (no-account) purchases - a separate table from subscription_items,
+      // see GuestPurchaseRow's doc comment for why they can't be unified.
+      billingDb
+        .from("guest_purchases")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(GUEST_PURCHASE_FEED_LIMIT),
     ]);
 
   const items = itemsRes.data ?? [];
@@ -605,12 +617,27 @@ export async function getBillingDashboard(): Promise<BillingDashboardData> {
     });
   }
 
+  const guestPurchases: GuestPurchaseTableRow[] = (guestPurchasesRes.data ?? []).map(
+    (row) => ({
+      id: row.id,
+      email: row.email,
+      productKey: row.product_key,
+      productLabel: guestProductLabel(row.product_key),
+      amountCents: row.amount_cents,
+      currency: row.currency,
+      status: row.status,
+      createdAt: row.created_at,
+      fulfilledAt: row.fulfilled_at,
+    })
+  );
+
   return {
     subscriptions: deriveSubscriptionOverview(items),
     addonMix: deriveAddonMix(items),
     minutes: deriveMinuteUsage(openPeriods, profiles),
     freeIntro: deriveFreeIntro(freeIntroRes.data ?? [], items, now),
     webhooks,
+    guestPurchases,
     consumption: deriveConsumptionSeries(consumptionRes.data ?? [], now),
     table,
   };
