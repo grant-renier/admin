@@ -89,6 +89,22 @@ export const BILLING_CATALOG: Record<CatalogProductKey, CatalogLine> = {
   },
 };
 
+/**
+ * Guest (no-account) product labels. Mirrors `GUEST_CATALOG` in
+ * `/Users/omrajpal/Downloads/IntualityWeb/src/lib/billing/guest-catalog.ts` -
+ * a deliberately separate, smaller catalog from {@link BILLING_CATALOG} above,
+ * because a guest checkout has no `user_id` to hang an entitlement off. See
+ * that module's docstring for why the two are not merged.
+ */
+export const GUEST_CATALOG_LABELS: Record<string, string> = {
+  atlas_guide: "The Persona Atlas Guide",
+};
+
+/** Customer-facing label for a guest product key, falling back to the raw key. */
+export function guestProductLabel(key: string): string {
+  return GUEST_CATALOG_LABELS[key] ?? key;
+}
+
 /** Minutes granted by the invite-led free introduction. */
 export const FREE_INTRO_MINUTES = 30;
 
