@@ -2,9 +2,14 @@ import { supabaseAdmin } from "@/lib/supabase/client";
 import type { SessionWithUser, SessionDetail } from "./types";
 
 export async function getSessions(): Promise<SessionWithUser[]> {
+  // Excludes soft-deleted rows, matching every list query in IntualityWeb -
+  // this admin view previously had no deleted_at filter at all (the column
+  // wasn't even in this repo's hand-written Database type), so a user's
+  // soft-deleted session still showed here as if it were live.
   const { data: sessions } = await supabaseAdmin
     .from("sessions")
     .select("*")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (!sessions || sessions.length === 0) return [];
@@ -160,6 +165,9 @@ export async function getSessionStats() {
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
+  // Every branch excludes soft-deleted sessions - see the same note in
+  // getSessions() above. Without it, these platform-wide stats included
+  // rows users had already deleted from their own account.
   const [
     { count: totalSessions },
     { count: sessionsThisWeek },
@@ -168,17 +176,20 @@ export async function getSessionStats() {
   ] = await Promise.all([
     supabaseAdmin
       .from("sessions")
-      .select("*", { count: "exact", head: true }),
+      .select("*", { count: "exact", head: true })
+      .is("deleted_at", null),
     supabaseAdmin
       .from("sessions")
       .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
       .gte("created_at", weekAgo.toISOString()),
     supabaseAdmin
       .from("sessions")
       .select("*", { count: "exact", head: true })
+      .is("deleted_at", null)
       .gte("created_at", twoWeeksAgo.toISOString())
       .lt("created_at", weekAgo.toISOString()),
-    supabaseAdmin.from("sessions").select("duration"),
+    supabaseAdmin.from("sessions").select("duration").is("deleted_at", null),
   ]);
 
   const totalAudioSeconds =

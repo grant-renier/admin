@@ -101,6 +101,19 @@ export interface Database {
           ended_at: string | null;
           project_id: string | null;
           last_chunk_index: number;
+          // Which of the four assessment uses this session was created under
+          // (self | others | two-way | group). Null for sessions that predate
+          // IntualityWeb migration 0009 - see that migration's comment.
+          assessment_use: string | null;
+          // Diarized speaker index tagged as the assessed person. Drives
+          // which final-analysis row report/report-adjacent tooling reads.
+          target_speaker: number | null;
+          // Participant labels for multi-speaker sessions (migration 0003).
+          participants: string[] | null;
+          // Soft-delete tombstone. Every other list/stat query across the
+          // platform excludes rows where this is set - see
+          // IntualityWeb/src/services/sessions/sessions.ts.
+          deleted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -121,6 +134,10 @@ export interface Database {
           ended_at?: string | null;
           project_id?: string | null;
           last_chunk_index?: number;
+          assessment_use?: string | null;
+          target_speaker?: number | null;
+          participants?: string[] | null;
+          deleted_at?: string | null;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["sessions"]["Insert"]>;
