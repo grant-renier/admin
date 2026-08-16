@@ -167,6 +167,31 @@ export type StripeWebhookEventRow = {
 };
 
 /**
+ * `guest_purchases` row (IntualityWeb migration `0012_atlas_guest_purchases.sql`).
+ *
+ * Structurally NOT a `subscription_items` row: no `user_id`, because a guest
+ * checkout (the $10 Persona Atlas Guide, `/atlas/purchase` in IntualityWeb) has
+ * no Supabase account to attach one to. `email` is the only identity - it comes
+ * from what Stripe Checkout collected, not a profile. `status` is `'paid'`
+ * until the confirmation email sends, then `'fulfilled'` - which per
+ * IntualityWeb's docs/BILLING.md means "the receipt email went out," NOT "the
+ * buyer has the actual document" (only one persona exists at full guide depth
+ * as of this writing, so nothing sends the real document yet).
+ */
+export type GuestPurchaseRow = {
+  id: string;
+  stripe_session_id: string;
+  stripe_payment_intent_id: string | null;
+  product_key: string;
+  email: string;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  fulfilled_at: string | null;
+  created_at: string;
+};
+
+/**
  * Minimal `Database` shape covering only the five billing tables.
  *
  * WHY this exists: `types/supabase.ts` is the repo's hand-written `Database`
@@ -206,6 +231,12 @@ export interface BillingDatabase {
       };
       stripe_webhook_events: {
         Row: StripeWebhookEventRow;
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      guest_purchases: {
+        Row: GuestPurchaseRow;
         Insert: Record<string, never>;
         Update: Record<string, never>;
         Relationships: [];
@@ -371,6 +402,20 @@ export interface SubscriptionTableRow {
   stripeSubscriptionId: string | null;
 }
 
+/** One `guest_purchases` row, display-shaped. See {@link GuestPurchaseRow}. */
+export interface GuestPurchaseTableRow {
+  id: string;
+  email: string;
+  productKey: string;
+  /** Customer-facing product name - falls back to the raw key if unrecognised. */
+  productLabel: string;
+  amountCents: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  fulfilledAt: string | null;
+}
+
 /** Everything the billing page renders, fetched in one pass. */
 export interface BillingDashboardData {
   subscriptions: SubscriptionOverview;
@@ -380,6 +425,8 @@ export interface BillingDashboardData {
   webhooks: WebhookHealth;
   consumption: DailyConsumption[];
   table: SubscriptionTableRow[];
+  /** Most recent guest (no-account) purchases - currently just the Atlas Guide. */
+  guestPurchases: GuestPurchaseTableRow[];
 }
 
 /* -------------------------------------------------------------------------- */
