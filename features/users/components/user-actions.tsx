@@ -27,12 +27,14 @@ import {
   setUserBannedAction,
 } from "@/app/dashboard/users/actions";
 import { USER_ROLES, type UserRole } from "../types";
+import { BillingBypassToggle } from "./billing-bypass-toggle";
 
 interface UserActionsProps {
   userId: string;
   email: string;
   role: string;
   bannedUntil: string | null;
+  billingBypass: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export function UserActions({
   email,
   role,
   bannedUntil,
+  billingBypass,
 }: UserActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -112,6 +115,21 @@ export function UserActions({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
+        <div className="flex items-center justify-between rounded-lg border border-border/50 p-3">
+          <div>
+            <p className="text-sm font-medium">Bypass billing</p>
+            <p className="text-xs text-muted-foreground">
+              Grants every add-on and unlimited minutes regardless of actual
+              purchases. Use for internal-team and beta-tester accounts.
+            </p>
+          </div>
+          <BillingBypassToggle
+            userId={userId}
+            email={email}
+            bypassed={billingBypass}
+          />
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium">Role</p>
           <p className="text-xs text-muted-foreground">

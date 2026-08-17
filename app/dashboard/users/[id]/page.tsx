@@ -37,6 +37,7 @@ export default async function UserDetailPage({
           email={user.email}
           role={user.role}
           bannedUntil={user.bannedUntil}
+          billingBypass={user.billing_bypass}
         />
       </div>
     </>

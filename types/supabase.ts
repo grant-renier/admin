@@ -24,6 +24,13 @@ export interface Database {
           role: string;
           onboarded: boolean;
           preferences: Record<string, unknown>;
+          /**
+           * Admin-set comp-account lever (migration
+           * `0014_billing_bypass.sql` in IntualityWeb). When true, the web
+           * app's entitlements-server grants this user everything regardless
+           * of subscription/usage-period state.
+           */
+          billing_bypass: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -35,6 +42,7 @@ export interface Database {
           role?: string;
           onboarded?: boolean;
           preferences?: Record<string, unknown>;
+          billing_bypass?: boolean;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];

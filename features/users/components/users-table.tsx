@@ -7,6 +7,7 @@ import type { UserWithStats } from "../types";
 import Link from "next/link";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BillingBypassToggle } from "./billing-bypass-toggle";
 
 const columns: ColumnDef<UserWithStats>[] = [
   {
@@ -19,6 +20,17 @@ const columns: ColumnDef<UserWithStats>[] = [
       >
         {row.original.display_name || "No name"}
       </Link>
+    ),
+  },
+  {
+    id: "billing_bypass",
+    header: "Bypass",
+    cell: ({ row }) => (
+      <BillingBypassToggle
+        userId={row.original.id}
+        email={row.original.email}
+        bypassed={row.original.billing_bypass}
+      />
     ),
   },
   {

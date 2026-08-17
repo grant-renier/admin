@@ -5,6 +5,7 @@ import { auditLog, requireAdmin } from "@/lib/require-admin";
 import { revalidatePath } from "next/cache";
 import {
   updateUserRole,
+  updateUserBillingBypass,
   deleteUserAccount,
   setUserBanned,
 } from "@/features/users/queries";
@@ -39,6 +40,21 @@ export async function updateUserRoleAction(id: string, role: UserRole) {
 
   auditLog(actor, "user.role_change", String(id));
   await updateUserRole(id, role);
+  revalidateUserPaths(id);
+}
+
+/**
+ * Toggles the comp-account "bypass billing" flag for a user. On, the web
+ * app grants them every add-on and unlimited minutes regardless of actual
+ * subscription/usage-period state -- the lever for internal-team and
+ * beta-tester accounts that should never hit the paywall.
+ */
+export async function updateUserBillingBypassAction(id: string, bypass: boolean) {
+  // Authorization is enforced HERE, not only in middleware: this action
+  // mutates via the service-role key, which bypasses RLS entirely.
+  const actor = await requireAdmin();
+  auditLog(actor, "user.billing_bypass_change", String(id));
+  await updateUserBillingBypass(id, bypass);
   revalidateUserPaths(id);
 }
 

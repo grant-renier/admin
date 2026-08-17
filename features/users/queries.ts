@@ -140,6 +140,26 @@ export async function updateUserRole(
 }
 
 /**
+ * Sets the comp-account "bypass billing" flag for a user. When true, the
+ * web app's entitlements-server (`resolveEntitlementsDetailed`) grants this
+ * user every add-on and an unlimited minute pool regardless of what
+ * `subscription_items` / `usage_periods` say - the lever for internal-team
+ * and beta-tester accounts that should never hit the paywall.
+ */
+export async function updateUserBillingBypass(
+  id: string,
+  bypass: boolean
+): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({ billing_bypass: bypass })
+    .eq("id", id);
+  if (error) {
+    throw new Error(`Failed to update billing bypass: ${error.message}`);
+  }
+}
+
+/**
  * Permanently deletes a user's auth account and profile row.
  *
  * The `profiles.id -> auth.users.id` FK cascade could not be verified from
