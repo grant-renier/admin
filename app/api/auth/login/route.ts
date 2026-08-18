@@ -1,5 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createSessionToken, COOKIE_NAME } from "@/lib/auth";
+import {
+  createSessionToken,
+  COOKIE_NAME,
+  AdminAuthNotConfiguredError,
+  type AdminPayload,
+} from "@/lib/auth";
+
+/**
+ * Mint a session token, or the documented 503 if the signing secret is
+ * missing/too short.
+ *
+ * `createSessionToken` throws `AdminAuthNotConfiguredError` in that case
+ * (see `lib/auth.ts`'s `secretKey`) - previously uncaught here, so a bad
+ * `ADMIN_JWT_SECRET` surfaced to the browser as a generic 500 ("Network
+ * error") instead of the fail-closed 503 AGENTS.md documents. Both login
+ * branches (dev password fallback and the real hash check) go through this
+ * so neither can regress back to an unhandled throw.
+ */
+async function mintOrFail(payload: AdminPayload): Promise<string | NextResponse> {
+  try {
+    return await createSessionToken(payload);
+  } catch (err) {
+    if (err instanceof AdminAuthNotConfiguredError) {
+      return NextResponse.json(
+        { error: "Admin auth is not configured (ADMIN_JWT_SECRET missing or too short)." },
+        { status: 503 }
+      );
+    }
+    throw err;
+  }
+}
 
 /**
  * In-memory login throttle: 5 failures per IP per 15 minutes. Resets on
@@ -62,10 +92,11 @@ export async function POST(request: NextRequest) {
       );
     }
     if (username === expectedUsername && password === "admin") {
-      const token = await createSessionToken({
+      const token = await mintOrFail({
         sub: "admin",
         username: expectedUsername,
       });
+      if (token instanceof NextResponse) return token;
 
       const response = NextResponse.json({ success: true });
       response.cookies.set(COOKIE_NAME, token, {
@@ -108,10 +139,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const token = await createSessionToken({
+  const token = await mintOrFail({
     sub: "admin",
     username,
   });
+  if (token instanceof NextResponse) return token;
 
   const response = NextResponse.json({ success: true });
   response.cookies.set(COOKIE_NAME, token, {
