@@ -362,18 +362,40 @@ export async function getRecentFailures(limit = 20): Promise<FailureRow[]> {
 /* ------------------------------------------------------------------ */
 
 /**
+ * A `recording` row this stale cannot still be live - a real session posts a
+ * chunk every 15s, so a client that vanished (closed tab, dead browser,
+ * crashed mid-session) without ever flipping status leaves a permanent
+ * false-positive otherwise. Generous multiple of the chunk cadence to avoid
+ * false negatives during a real, briefly slow chunk.
+ */
+const STALE_RECORDING_MINUTES = 5;
+
+/**
  * Live sessions currently holding the engine open.
  *
  * Each recording session posts a transcript chunk every 15s into an engine
  * that scores one chunk at a time behind a global lock, so this count read
  * against `CONCURRENT_SESSION_CEILING` is the capacity question the owner is
  * actually asking.
+ *
+ * `status = 'recording'` alone is not enough: nothing ever flips a session's
+ * status when the client just disappears (closed tab, crashed browser,
+ * network drop), so a `recording` row can sit there indefinitely. Verified
+ * directly - every row this query returned before the `updated_at` filter
+ * was added dated back weeks, `updated_at` frozen at `created_at`, most with
+ * `duration: 0`. Scoped to rows updated in the last {@link STALE_RECORDING_MINUTES}
+ * minutes so the count reflects sessions actually posting chunks right now.
  */
 export async function getLiveSessionLoad(): Promise<LiveSessionLoad> {
+  const staleCutoff = new Date(
+    Date.now() - STALE_RECORDING_MINUTES * 60 * 1000,
+  ).toISOString();
+
   const { count } = await supabaseAdmin
     .from("sessions")
     .select("id", { count: "exact", head: true })
-    .eq("status", "recording");
+    .eq("status", "recording")
+    .gte("updated_at", staleCutoff);
 
   const concurrent = count ?? 0;
   return {
